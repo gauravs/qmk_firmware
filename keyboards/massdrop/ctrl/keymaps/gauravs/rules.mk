@@ -1,4 +1,2 @@
-TAP_DANCE_ENABLE = yes
-
-# get rid of this when qmk ships a fix
-ALLOW_WARNINGS = yes
+# This keymap requires Massdrop Configurator support
+OPT_DEFS += -DUSE_MASSDROP_CONFIGURATOR
