@@ -28,27 +28,30 @@ enum alt_keycodes {
 #define MINUTES *(60 SECONDS)
 
 #define COLOR_RAINBOW   1
+#define COLOR_GRADIENT  2
 #define COLOR_GREEN     5
 #define COLOR_RED       4
 
-#define LED_ANIMATION_ID_NORMAL     COLOR_GREEN
+#define LED_ANIMATION_ID_NORMAL     COLOR_GRADIENT
 #define LED_ANIMATION_ID_LOWER      COLOR_RED
 #define LED_ANIMATION_ID_OFF        10
 #define LED_ANIMATION_ID_DEFAULT    LED_ANIMATION_ID_NORMAL
 
-#define LED_GCR_DEFAULT          LED_GCR_MAX / 3
-#define LED_MODE_DEFAULT         LED_MODE_NON_KEYS_ONLY // LED_MODE_KEYS_ONLY
+#define LED_BRIGHTNESS_MIN       30
+#define LED_GCR_DEFAULT          LED_BRIGHTNESS_MIN
+#define LED_MODE_DEFAULT         LED_MODE_KEYS_ONLY
+#define LED_MODE_LOWER           LED_MODE_NORMAL
 #define DFU_DURATION             1 SECONDS
 
-// #define HOME
+#define HOME
 
 #ifdef HOME
-#undef LED_ANIMATION_ID_DEFAULT
-#define LED_ANIMATION_ID_DEFAULT LED_ANIMATION_ID_OFF
-
-// #define LED_SLEEP_ENABLED
-// #define LED_SLEEP_DEFAULT  false
-// #define LED_SLEEP_DURATION 5 MINUTES
+#define LED_SLEEP_ENABLED
+#define LED_SLEEP_DEFAULT  false
+#define LED_SLEEP_DURATION 5 MINUTES
+#else
+#undef LED_MODE_DEFAULT
+#define LED_MODE_DEFAULT LED_MODE_NON_KEYS_ONLY
 #endif
 
 enum {
@@ -56,6 +59,7 @@ enum {
   LOWER,
   RAISE,
 };
+keymap_config_t keymap_config;
 
 //Tap Dance Declarations
 // enum {
@@ -292,10 +296,12 @@ uint32_t layer_state_set_user(uint32_t state) {
   switch (biton32(state)) {
     case BASE:
         led_animation_id = last_led_animation_id;
+        led_lighting_mode = LED_MODE_DEFAULT;
         break;
     case LOWER:
         last_led_animation_id = led_animation_id;
         led_animation_id = LED_ANIMATION_ID_LOWER;
+        led_lighting_mode = LED_MODE_LOWER;
         break;
   }
   return state;

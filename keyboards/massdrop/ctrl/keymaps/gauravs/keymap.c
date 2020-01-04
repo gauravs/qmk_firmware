@@ -28,27 +28,30 @@ enum ctrl_keycodes {
 #define MINUTES *(60 SECONDS)
 
 #define COLOR_RAINBOW   1
+#define COLOR_GRADIENT  2
 #define COLOR_GREEN     5
 #define COLOR_RED       4
 
-#define LED_ANIMATION_ID_NORMAL     COLOR_GREEN
+#define LED_ANIMATION_ID_NORMAL     COLOR_GRADIENT
 #define LED_ANIMATION_ID_LOWER      COLOR_RED
 #define LED_ANIMATION_ID_OFF        10
 #define LED_ANIMATION_ID_DEFAULT    LED_ANIMATION_ID_NORMAL
 
-#define LED_GCR_DEFAULT          LED_GCR_MAX / 3
-#define LED_MODE_DEFAULT         LED_MODE_NON_KEYS_ONLY // LED_MODE_KEYS_ONLY
+#define LED_BRIGHTNESS_MIN       30
+#define LED_GCR_DEFAULT          LED_BRIGHTNESS_MIN
+#define LED_MODE_DEFAULT         LED_MODE_KEYS_ONLY
+#define LED_MODE_LOWER           LED_MODE_NORMAL
 #define DFU_DURATION             1 SECONDS
 
 #define HOME
 
 #ifdef HOME
-#undef LED_ANIMATION_ID_DEFAULT
-#define LED_ANIMATION_ID_DEFAULT LED_ANIMATION_ID_OFF
-
-// #define LED_SLEEP_ENABLED
-// #define LED_SLEEP_DEFAULT  false
-// #define LED_SLEEP_DURATION 5 MINUTES
+#define LED_SLEEP_ENABLED
+#define LED_SLEEP_DEFAULT  false
+#define LED_SLEEP_DURATION 5 MINUTES
+#else
+#undef LED_MODE_DEFAULT
+#define LED_MODE_DEFAULT LED_MODE_NON_KEYS_ONLY
 #endif
 
 enum {
@@ -65,7 +68,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_TAB,     KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, KC_RBRC,    KC_BSLS,   KC_DEL,  KC_END,  KC_PGDN, \
         KC_ESC,     KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, KC_ENT, \
         KC_LSFT,    KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,                                 KC_UP, \
-        KC_LCTL,    KC_LGUI, KC_LALT,                  KC_SPC,                              MO(1),   KC_RALT, KC_NO,   KC_RCTL,               KC_LEFT, KC_DOWN, KC_RGHT \
+        KC_LCTL,    KC_LGUI, KC_LALT,                  KC_SPC,                              KC_RALT, MO(1)  , KC_NO,   KC_RCTL,               KC_LEFT, KC_DOWN, KC_RGHT \
     ),
     [LOWER] = LAYOUT(
         _______, _______, _______, _______, _______, _______, _______, _______,  _______, _______, _______, _______, _______,               KC_MUTE, _______, _______, \
@@ -136,7 +139,7 @@ void set_sleep_state(bool keep_sleeping) {
 
 // Runs just one time when the keyboard initializes.
 void matrix_init_user(void) {
-  led_lighting_mode = LED_MODE_KEYS_ONLY;
+  led_lighting_mode = LED_MODE_DEFAULT;
   gcr_desired       = LED_GCR_DEFAULT;
   led_animation_id  = LED_ANIMATION_ID_DEFAULT;
 };
@@ -287,10 +290,12 @@ uint32_t layer_state_set_user(uint32_t state) {
   switch (biton32(state)) {
     case BASE:
         led_animation_id = last_led_animation_id;
+        led_lighting_mode = LED_MODE_DEFAULT;
         break;
     case LOWER:
         last_led_animation_id = led_animation_id;
         led_animation_id = LED_ANIMATION_ID_LOWER;
+        led_lighting_mode = LED_MODE_LOWER;
         break;
   }
   return state;
